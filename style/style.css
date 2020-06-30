@@ -2,7 +2,9 @@ body{
     font-family:Tahoma, Geneva, sans-serif;
 }
 .jumbotron{
-    background-color: darkgreen;
+    /* background-color: darkgreen; */
+    background-image: url('../assets/img/abstract-honeycomb-crop.jpg');
+    background-position: center top;
     color: #ffffff;
     padding: 100px 25px;
 }
@@ -17,11 +19,11 @@ body{
     font-size: 200px;
 }
 .logo-small{
-    color: darkgreen;
+    color: #14376a;
     font-size: 50px;
 }
 .logo-small:hover{
-    color: lightgreen;
+    color: #086aec;
 }
 /* media query to  center the "logo column" 
 on screens smaller than 768 pixels wide */
