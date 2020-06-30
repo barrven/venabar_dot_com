@@ -5,7 +5,9 @@ body{
     /* background-color: darkgreen; */
     background-image: url('../assets/img/abstract-honeycomb-crop.jpg');
     background-position: center top;
+    opacity: 0.95;
     color: #ffffff;
+    text-shadow: -2px 1px 3px #000000, 3px 4px 4px #000000;
     padding: 100px 25px;
 }
 .container-fluid {
