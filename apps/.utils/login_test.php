@@ -1,23 +1,6 @@
 <?php
-require 'lib.php';
-$db = new Database();
-session_start();
-$username = getParam('username');
-$pwd = md5(getParam('pwd'));
-if(checkPassword($username, $pwd, $db)){
-    if (getParam('action')== 'logout'){
-        session_destroy();
-        header('location: login_form.php');
-    }
-    $_SESSION['authorized'] = true;
-    $_SESSION['username'] = $username;
-    $title = 'Main Test Page';
-}
-else{
-    //redirect to login page if login is not valid
-    header('location: login_form.php?action=redirect');
-}
-include 'header.php';
+
+include '../.phtml/header.php';
 ?>
 
 <body class="bg-dark">
@@ -87,4 +70,4 @@ include 'header.php';
             ?>
         </p>
     </div>
-<?php include 'footer.php';
+<?php include '../.phtml/footer.php';
