@@ -1,5 +1,5 @@
 <?php
 $page_title = 'Book Library';
 $msg = 'The book library is still under construction';
-
-include '../../utils/msg.phtml';
+require '../.config.php';
+include '../.utils/msg.phtml';
