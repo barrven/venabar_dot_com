@@ -1,5 +1,4 @@
 <?php
-
 include '../.phtml/header.php';
 ?>
 

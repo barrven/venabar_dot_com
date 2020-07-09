@@ -8,6 +8,6 @@ require '.lib/functions.php';
 
 //define all constants here for use across other files
 define('DB_HOST', 'localhost');
-define('DB_USER', 'barringt_librarian');
-define('DB_PASS', 'someSuperStrongPw');
-define('DB_NAME', 'barringt_book_library');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_NAME', 'book_library');

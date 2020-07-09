@@ -1,19 +1,19 @@
 <?php
-$db = new Database();
+require_once '../.config.php';
 session_start();
+$db = new Database();
 $username = getParam('username');
 $pwd = md5(getParam('pwd'));
 if(checkPassword($username, $pwd, $db)){
-    if (getParam('action') == 'logout'){
-        session_destroy();
-        //todo: figure out how else to redirect to the login form
-        header('location: login_form.php');
-    }
+    //login succeeded
     $_SESSION['authorized'] = true;
     $_SESSION['username'] = $username;
 }
 else{
-    //todo: same as above
-    //redirect to login page if login is not valid
-    header('location: ?action=redirect');
+    //track a failed attempt
+    $_SESSION['login_attempted'] = true;
 }
+//redirect to login page if login is not valid
+header('location: '.$_SESSION['page_requested_login']);
+exit();
+

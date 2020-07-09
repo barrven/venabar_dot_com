@@ -12,13 +12,7 @@
     <script src="https://kit.fontawesome.com/4467a63d2d.js" crossorigin="anonymous"></script>
     <style>
         .max-width-350{max-width: 350px;}
-        footer{
-            position: fixed;
-            bottom: 0;
-            left:0;
-            right: 0;
-        }
     </style>
     <title><?php echo @$page_title ?></title>
 </head>
-<?php
+<body class="bg-dark">
