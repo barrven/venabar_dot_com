@@ -13,10 +13,9 @@ if (@$_SESSION['authorized'] == true){
     //include '../.utils/msg.phtml';
     $username = $_SESSION['username'];
     $db = new Database();
+    //if login succeeded, load stuff below
 ?>
 
-
-//if login succeeded, load stuff below
     <div class="text-center text-white bg-success border border-success rounded p-3">
         <!-- logout button uses action param to tell this page to logout-->
         <a class="btn btn-primary float-right" href="?action=logout">Logout</a>

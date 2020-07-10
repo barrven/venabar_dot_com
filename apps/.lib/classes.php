@@ -1,4 +1,5 @@
 <?php
+//source: https://culttt.com/2012/10/01/roll-your-own-pdo-php-class/
 //abstracts all the commonly used database queries, handles error checking
 class Database{
     private $host = DB_HOST;

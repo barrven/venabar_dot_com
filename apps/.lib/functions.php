@@ -8,7 +8,7 @@ function getParam($name, $default = '')
     }
 }
 
-function checkPassword($username, $password, $database){
+function checkPassword($username, $password, Database $database){
     $error = $database->getError(); //$error is null if there was no problem connecting
     if (!$error){
         $checkVal = $database->selectRecordWhere('password', 'users', 'username', $username);
