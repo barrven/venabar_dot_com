@@ -69,15 +69,37 @@ class Database{
         return $this->statement->fetchAll($fetchStyle);
     }
 
-    public function getRecord($fetchStyle=PDO::FETCH_NUM){
+
+    public function getRecord(){
         $this->execute();
-        return $this->statement->fetch($fetchStyle);
+        //return $this->statement->fetch($fetchStyle);
+        $result = $this->statement->fetchAll(PDO::FETCH_NUM);
+
+        $singleDArray = [];
+        foreach ($result as $item) {
+            array_push($singleDArray, $item[0]);
+        }
+
+        return $singleDArray;
     }
 
     public function selectAll($table, $fetchStyle=PDO::FETCH_NUM){
         $this->setQuery("select * from $table;");
         $this->execute();
         return $this->statement->fetchAll($fetchStyle);
+    }
+
+    //returns single record as a string
+    public function selectRecordWhere($col, $table, $whereCol, $clause){
+        //using proper prepared statement for security
+        $this->setQuery("select :col from :table where :whereCol = :clause");
+        $this->bind(':col', $col);
+        $this->bind(':table', $table);
+        $this->bind(':whereCol', $whereCol);
+        $this->bind(':clause', $clause);
+
+        $this->setQuery("select $col from $table where $whereCol = '$clause'");
+        return $this->getRecord(PDO::FETCH_NUM)[0];
     }
 
     public function insert($cols, $values, $table){
@@ -108,24 +130,37 @@ class Database{
         //todo:implement db class delete method
     }
 
-    //returns single record as a string
-    public function selectRecordWhere($col, $table, $whereCol, $clause){
-        //using proper prepared statement for security
-        $this->setQuery("select :col from :table where :whereCol = :clause");
-        $this->bind(':col', $col);
-        $this->bind(':table', $table);
-        $this->bind(':whereCol', $whereCol);
-        $this->bind(':clause', $clause);
 
-        //todo: move try catch to execute method
-        try{
-            $this->setQuery("select $col from $table where $whereCol = '$clause'");
-            return $this->getRecord(PDO::FETCH_NUM)[0];
-        }
-        catch(PDOException $e){
-            $this->error = $e->getMessage();
-            return $this->error;
-        }
+}
+
+//todo: finish table class draw function
+//todo: store bootstrap classes in table parameters
+class Table{
+    private $numRows;
+    private $numCols;
+    private $colTitles;
+    private $data;
+
+    public function __construct($colTitles=[], $data=[[]]){
+        $this->numRows = sizeof($data);
+        $this->numCols = sizeof($colTitles);
+        $this->colTitles = $colTitles;
+        $this->data = $data;
+
+        $this->draw();
     }
+
+    public function draw(){
+        echo "<table class='table table-striped'>".PHP_EOL;
+        echo "<thead class='thead-dark'>".PHP_EOL;
+        echo "<tr>".PHP_EOL;
+        foreach ($this->colTitles as $colTitle){
+            echo "<th scope='col'>$colTitle</th>".PHP_EOL;
+        }
+        echo "</tr>".PHP_EOL;
+        echo "</thead>".PHP_EOL;
+
+    }
+
 
 }

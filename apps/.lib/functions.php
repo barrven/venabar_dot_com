@@ -19,3 +19,4 @@ function checkPassword($username, $password, Database $database){
     echo $database->getError();
     return false;
 }
+

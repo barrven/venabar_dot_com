@@ -1,4 +1,7 @@
 <?php
+//login_manager.php includes login_form.php, which submits login info to login_check.php
+//login_check.php then redirects back to whatever page requested the login (variable stored in session)
+// if the login info is correct
 session_start();
 if (@$_SESSION['authorized'] == false){
     //store page that's requesting login

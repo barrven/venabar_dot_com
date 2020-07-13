@@ -8,9 +8,14 @@
     </h2>
     <p class="text-center text-danger">
         <?php
-        //todo: fix this so it does not show error if it's the first time attempting login
         //to check if login_test.php has redirected back to login form due to incorrect password
-        echo @$_SESSION['login_attempted'] ? 'Username or password not found' : '' ?>
+            if(@$_SESSION['login_attempted']){
+                echo 'Username or password not found<br>';
+                if ($_SESSION['db_error_msg']){
+                    echo 'Could not connect to database';
+                }
+            }
+        ?>
     </p>
     <form action="<?php echo htmlspecialchars('../.utils/login_check.php') ?>" class="was-validated" method="post">
         <!--username input-->
