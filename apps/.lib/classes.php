@@ -91,6 +91,7 @@ class Database{
         //return $this->statement->fetch($fetchStyle);
         $result = $this->statement->fetchAll(PDO::FETCH_NUM);
 
+        //todo: change this later to use array_implode() to reduce the second dimension to string
         $singleDArray = [];
         foreach ($result as $item) {
             array_push($singleDArray, $item[0]);
@@ -116,7 +117,7 @@ class Database{
         $this->bind(':clause', $clause);
 
         $this->setQuery("select $col from $table where $whereCol = '$clause'");
-        return $this->getRecord(PDO::FETCH_NUM)[0];
+        return $this->getRecord()[0];
     }
 
     public function getColumnNames($table){
@@ -124,7 +125,7 @@ class Database{
                                 WHERE  table_name = :dbTable AND table_schema = :dbName");
         $this->bind(':dbTable', $table);
         $this->bind('dbName', $this->dbName);
-
+        return $this->getRecord();
     }
 
     public function insert($cols, $values, $table){
@@ -184,6 +185,24 @@ class Table{
         }
         echo "</tr>".PHP_EOL;
         echo "</thead>".PHP_EOL;
+
+        echo "<tbody class='bg-light'>".PHP_EOL;
+        foreach ($this->data as $record){
+            echo "<tr>".PHP_EOL;
+            foreach ($record as $value){
+                echo "<td>$value</td>".PHP_EOL;
+            }
+            echo "</tr>".PHP_EOL;
+        }
+        echo "</tbody>".PHP_EOL;
+        echo "</table>".PHP_EOL;
+    }
+
+    public function addColumn(){
+
+    }
+
+    public function addRow(){
 
     }
 
