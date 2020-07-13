@@ -12,7 +12,7 @@ if(checkPassword($username, $pwd, $db)){
 else{
     //track a failed attempt
     $_SESSION['login_attempted'] = true;
-    $_SESSION['db_error_msg'] = $db->getError();
+    $_SESSION['db_error_msg'] = $db->getErrorMessage();
 }
 //redirect to login page if login is not valid
 header('location: '.$_SESSION['page_requested_login']);

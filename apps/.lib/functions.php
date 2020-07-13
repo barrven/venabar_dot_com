@@ -16,7 +16,6 @@ function checkPassword($username, $password, Database $database){
             return true;
         }
     }
-    echo $database->getError();
     return false;
 }
 

@@ -62,7 +62,7 @@ include '../.phtml/header.php';
                 $result = $db->insert($cols, $vals, 'booksss');
                 if (!$result){
                     echo '<h4 class="text-danger">There was a database error</h4>';
-                    $e = $db->getError();
+                    $e = $db->getErrorMessage();
                     echo "<p>$e</p>";
                 }
 

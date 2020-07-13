@@ -7,7 +7,7 @@ class Database{
     private $pass = DB_PASS;
     private $dbName = DB_NAME;
     private $dbHandler; // stores the PDO object if connection was successful
-    public $error; //stores error message if there was one
+    private $error; //stores the PDOException object if there was an exception at some point
     private $statement; //stores a statement prepared by the query method
 
     public function __construct(){
@@ -20,13 +20,21 @@ class Database{
             $this->statement = $this->dbHandler->prepare('');
         }
         catch(PDOException $e){
-            $this->error = $e->getMessage();
+            $this->error = $e;
         }
     }
 
     public function getError(){
         return $this->error;
     }
+
+    public function getErrorMessage(){
+        if ($this->error){
+            return $this->error->getMessage();
+        }
+        return '';
+    }
+
     public function setQuery($query){
         $this->statement = $this->dbHandler->prepare($query);
     }
@@ -56,20 +64,28 @@ class Database{
 
     public function execute(){
         try{
+            $this->error = null; //dump any previous error
             return $this->statement->execute();
         }
         catch(PDOException $e){
-            $this->error = $e->getMessage();
+            //$this->error = $e->getMessage();
+            $this->error = $e;
         }
 
     }
 
+
+
+    //////////////////////////
+    // higher level methods //
+    //////////////////////////
+    // todo: all functions below should have some sort of error returning
     public function getRecords($fetchStyle=PDO::FETCH_NUM){
-        $this->execute();
+        $this->execute(); //execute handles possible exception and stores the error
         return $this->statement->fetchAll($fetchStyle);
     }
 
-
+    //returns 1d array
     public function getRecord(){
         $this->execute();
         //return $this->statement->fetch($fetchStyle);
@@ -83,6 +99,7 @@ class Database{
         return $singleDArray;
     }
 
+    //returns 2d array
     public function selectAll($table, $fetchStyle=PDO::FETCH_NUM){
         $this->setQuery("select * from $table;");
         $this->execute();
@@ -92,14 +109,22 @@ class Database{
     //returns single record as a string
     public function selectRecordWhere($col, $table, $whereCol, $clause){
         //using proper prepared statement for security
-        $this->setQuery("select :col from :table where :whereCol = :clause");
+        $this->setQuery("select :col from :dbTable where :whereCol = :clause");
         $this->bind(':col', $col);
-        $this->bind(':table', $table);
+        $this->bind(':dbTable', $table);
         $this->bind(':whereCol', $whereCol);
         $this->bind(':clause', $clause);
 
         $this->setQuery("select $col from $table where $whereCol = '$clause'");
         return $this->getRecord(PDO::FETCH_NUM)[0];
+    }
+
+    public function getColumnNames($table){
+        $this->setQuery("SELECT column_name FROM information_schema.columns 
+                                WHERE  table_name = :dbTable AND table_schema = :dbName");
+        $this->bind(':dbTable', $table);
+        $this->bind('dbName', $this->dbName);
+
     }
 
     public function insert($cols, $values, $table){
