@@ -31,10 +31,39 @@ if (@$_SESSION['authorized'] == true){
     </div>
 
     <div class="container bg-light border border-success rounded mt-2 p-3">
+        <?php
+        $db->setQuery('SHOW TABLES in '.DB_NAME);
+        $tablesList = $db->getRecord();
+        $selectedTable = @$_POST['data-table'];
+        ?>
+
+        <form method="post" action="db_tests.php" style="max-width: 500px; margin: auto">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="data-table">Selected Table:</label>
+                </div>
+                <select class="custom-select" id="data-table" name="data-table">
+                    <option selected><?php echo (@$selectedTable)? $selectedTable : 'No table selected' ?></option>
+<!--                    <option selected>No Table Selected</option>-->
+                    <?php
+                    foreach ($tablesList as $item){
+                        echo "<option value='$item'>$item</option>".PHP_EOL;
+                    }
+                    ?>
+                </select>
+                <div class="input-group-append">
+                    <button class="btn btn-success" type="submit">Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+    <div class="container bg-light border border-success rounded mt-2 p-3">
         <div class="table-responsive">
             <?php
-            $table = $db->selectAll('books');
-            $col_titles = $db->getColumnNames('books');
+            $table = $db->selectAll($selectedTable);
+            $col_titles = $db->getColumnNames($selectedTable);
             //$db->setQuery('select books_name, books_author from books');
             //$table = $db->getRecords();
             //$col_titles = ['Book Title', 'Author'];
@@ -48,12 +77,16 @@ if (@$_SESSION['authorized'] == true){
 
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <?php
-            echo $php_table->numPages.'<br>';
-            echo $php_table->currPageNum.'<br>';
-            $x = getParam('p');
-            var_dump($x);
-            echo '<br>';
-            var_dump(intval($x));
+//            echo $php_table->numPages.'<br>';
+//            echo $php_table->currPageNum.'<br>';
+//            $x = getParam('p');
+//            var_dump($x);
+//            echo '<br>';
+//            var_dump(intval($x));
+
+        var_dump(!empty($selectedTable));
+        echo '<br>';
+        var_dump($selectedTable);
         ?>
     </div>
 
