@@ -38,8 +38,8 @@ if (@$_SESSION['authorized'] == true){
             //$db->setQuery('select books_name, books_author from books');
             //$table = $db->getRecords();
             //$col_titles = ['Book Title', 'Author'];
-            $php_table = new Table($col_titles, $table);
-            $php_table->enablePagination(5, 2);
+            $php_table = new Table($col_titles, $table, 'books-inventory');
+            $php_table->enablePagination(10, intval(getParam('p'))-1);
             $php_table->draw();
 
             ?>
@@ -48,8 +48,12 @@ if (@$_SESSION['authorized'] == true){
 
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <?php
-            echo $php_table->numPages. '<br>';
-            echo $php_table->currPageNum;
+            echo $php_table->numPages.'<br>';
+            echo $php_table->currPageNum.'<br>';
+            $x = getParam('p');
+            var_dump($x);
+            echo '<br>';
+            var_dump(intval($x));
         ?>
     </div>
 

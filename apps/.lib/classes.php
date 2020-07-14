@@ -164,6 +164,7 @@ class Database{
 //todo: store bootstrap classes in table parameters
 class Table{
     //basic properties
+    protected $id;
     protected $numRows;
     protected $numCols;
     protected $colTitles;
@@ -179,11 +180,12 @@ class Table{
     public $currPageNum; // zero indexed because it makes rowStart and rowEnd easier to calculate
 
 
-    public function __construct($colTitles=[], $data=[[]]){
+    public function __construct($colTitles=[], $data=[[]], $id=''){
         $this->numRows = sizeof($data);
         $this->numCols = sizeof($colTitles);
         $this->colTitles = $colTitles;
         $this->data = $data;
+        $this->id = $id;
         //set styles default
         $this->tableClass = 'table table-striped';
         $this->theadClass = 'thead-dark';
@@ -196,7 +198,10 @@ class Table{
         $this->recordsPerPage = $recPerPage;
         //ceil rounds up to nearest int but returns a float. intval converts to integer
         $this->numPages = intval(ceil($this->numRows/$recPerPage)); //  roundUp(sizeOf($data) / $recordsPerPage)
-        $this->currPageNum = $currPage;
+        //don't allow pages that are out of bounds
+        if ($currPage < $this->numPages && $currPage >= 0){
+            $this->currPageNum = $currPage;
+        }
     }
 
     public function draw(){
@@ -217,7 +222,7 @@ class Table{
             $rowEnd = $this->numRows;
         }
 
-        echo "<table class='$this->tableClass'>".PHP_EOL;
+        echo "<table class='$this->tableClass' id='$this->id'>".PHP_EOL;
 
         echo "<thead class='$this->theadClass'>".PHP_EOL;
         echo "<tr>".PHP_EOL;
@@ -245,6 +250,35 @@ class Table{
         echo "</tbody>".PHP_EOL;
 
         echo "</table>".PHP_EOL;
+
+        //todo: add page navigation buttons here
+        if ($this->pagination){
+            $this->drawPageButtons();
+        }
+    }
+
+    protected function drawPageButtons(){
+        //todo: figure out how to differentiate multiple tables with different pages using table id
+
+        echo '<nav aria-label="Table page navigation">'.PHP_EOL;
+        echo '<ul class="pagination justify-content-center">'.PHP_EOL;
+        /* format for each page button:
+        <li class="page-item">
+            <a class="page-link" href="?p=1">1</a>
+        </li>
+         */
+        //loop from 1 to <= num pages
+        //links for each button ar numbered (not zero indexed)
+        //must -1 before sending value to enablePagination
+        for ($i = 1; $i <= $this->numPages; $i++){
+            echo '<li class="page-item">'.PHP_EOL;
+            echo "<a class='page-link' href='?p=$i'>$i</a>".PHP_EOL;
+            echo '</li>'.PHP_EOL;
+        }
+
+        echo '</ul>'.PHP_EOL;
+        echo '</nav>'.PHP_EOL;
+
     }
 
     public function addColumn($newColData =[]){
