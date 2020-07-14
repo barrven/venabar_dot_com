@@ -163,13 +163,18 @@ class Database{
 //todo: finish table class draw function with pagination
 //todo: store bootstrap classes in table parameters
 class Table{
-    private $numRows;
-    private $numCols;
-    private $colTitles;
-    private $data;
-
-    private $pagination;
-    private $recordsPerPage;
+    //basic properties
+    protected $numRows;
+    protected $numCols;
+    protected $colTitles;
+    protected $data;
+    //style properties
+    public $tableClass;
+    public $theadClass;
+    //pagination properties
+    protected $pagination;
+    protected $recordsPerPage;
+    //todo: change these back to protected after finished testing
     public  $numPages; //  roundUp(sizeOf($data) / $recordsPerPage)
     public $currPageNum; // zero indexed because it makes rowStart and rowEnd easier to calculate
 
@@ -179,6 +184,9 @@ class Table{
         $this->numCols = sizeof($colTitles);
         $this->colTitles = $colTitles;
         $this->data = $data;
+        //set styles default
+        $this->tableClass = 'table table-striped';
+        $this->theadClass = 'thead-dark';
 
     }
 
@@ -209,9 +217,9 @@ class Table{
             $rowEnd = $this->numRows;
         }
 
-        echo "<table class='table table-striped'>".PHP_EOL;
+        echo "<table class='$this->tableClass'>".PHP_EOL;
 
-        echo "<thead class='thead-dark'>".PHP_EOL;
+        echo "<thead class='$this->theadClass'>".PHP_EOL;
         echo "<tr>".PHP_EOL;
         //add the column titles
         for ($i = 0; $i < $this->numCols; $i++){ // changed this from foreach so that addColumn will work
