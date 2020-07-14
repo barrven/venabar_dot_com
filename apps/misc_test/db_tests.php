@@ -33,15 +33,24 @@ if (@$_SESSION['authorized'] == true){
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <div class="table-responsive">
             <?php
-            //$table = $db->selectAll('books');
-            //$col_titles = $db->getColumnNames('books');
-            $db->setQuery('select books_name, books_author from books');
-            $table = $db->getRecords();
-            $col_titles = ['Book Title', 'Author'];
+            $table = $db->selectAll('books');
+            $col_titles = $db->getColumnNames('books');
+            //$db->setQuery('select books_name, books_author from books');
+            //$table = $db->getRecords();
+            //$col_titles = ['Book Title', 'Author'];
             $php_table = new Table($col_titles, $table);
+            $php_table->enablePagination(5, 2);
+            $php_table->draw();
 
             ?>
         </div>
+    </div>
+
+    <div class="container bg-light border border-success rounded mt-2 p-3">
+        <?php
+            echo $php_table->numPages. '<br>';
+            echo $php_table->currPageNum;
+        ?>
     </div>
 
 

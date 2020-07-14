@@ -70,6 +70,7 @@ class Database{
         catch(PDOException $e){
             //$this->error = $e->getMessage();
             $this->error = $e;
+            return false;
         }
 
     }
@@ -159,7 +160,7 @@ class Database{
 
 }
 
-//todo: finish table class draw function
+//todo: finish table class draw function with pagination
 //todo: store bootstrap classes in table parameters
 class Table{
     private $numRows;
@@ -167,43 +168,89 @@ class Table{
     private $colTitles;
     private $data;
 
+    private $pagination;
+    private $recordsPerPage;
+    public  $numPages; //  roundUp(sizeOf($data) / $recordsPerPage)
+    public $currPageNum; // zero indexed because it makes rowStart and rowEnd easier to calculate
+
+
     public function __construct($colTitles=[], $data=[[]]){
         $this->numRows = sizeof($data);
         $this->numCols = sizeof($colTitles);
         $this->colTitles = $colTitles;
         $this->data = $data;
 
-        $this->draw();
+    }
+
+    //todo: complete pagination method
+    public function enablePagination($recPerPage=10, $currPage=0){
+        $this->pagination = true;
+        $this->recordsPerPage = $recPerPage;
+        //ceil rounds up to nearest int but returns a float. intval converts to integer
+        $this->numPages = intval(ceil($this->numRows/$recPerPage)); //  roundUp(sizeOf($data) / $recordsPerPage)
+        $this->currPageNum = $currPage;
     }
 
     public function draw(){
+        //set rowStart and rowEnd to different values based on whether pagination is enabled or not
+        if ($this->pagination){
+            $rowStart = $this->currPageNum * $this->recordsPerPage;
+            //check if this is the last page -> avoid index out of bounds in the case where numRecords is not
+            //divisible by recordsPerPage
+            if ($this->currPageNum == $this->numPages-1){ //numPages-1 because currPage is zero-indexed
+                $rowEnd = $this->numRows;
+            }
+            else{
+                $rowEnd = ($rowStart + $this->recordsPerPage);
+            }
+        }
+        else{
+            $rowStart = 0;
+            $rowEnd = $this->numRows;
+        }
+
         echo "<table class='table table-striped'>".PHP_EOL;
+
         echo "<thead class='thead-dark'>".PHP_EOL;
         echo "<tr>".PHP_EOL;
-        foreach ($this->colTitles as $colTitle){
-            echo "<th scope='col'>$colTitle</th>".PHP_EOL;
+        //add the column titles
+        for ($i = 0; $i < $this->numCols; $i++){ // changed this from foreach so that addColumn will work
+            $temp = $this->colTitles[$i];
+            echo "<th scope='col'>$temp</th>".PHP_EOL;
         }
         echo "</tr>".PHP_EOL;
         echo "</thead>".PHP_EOL;
 
         echo "<tbody class='bg-light'>".PHP_EOL;
-        foreach ($this->data as $record){
+        //populate the table
+        //rowStart and rowEnd are set based on whether pagination is enabled
+        for ($i = $rowStart; $i < $rowEnd; $i++){ // changed this from foreach so that addRow will work
             echo "<tr>".PHP_EOL;
-            foreach ($record as $value){
-                echo "<td>$value</td>".PHP_EOL;
+
+            for ($j = 0; $j < $this->numCols; $j++){ // changed this from foreach so that addColumn will work
+                $temp = $this->data[$i][$j];
+                echo "<td>$temp</td>".PHP_EOL;
             }
+
             echo "</tr>".PHP_EOL;
         }
         echo "</tbody>".PHP_EOL;
+
         echo "</table>".PHP_EOL;
     }
 
-    public function addColumn(){
+    public function addColumn($newColData =[]){
+        //specify the column (default is far right)
+        //increment numCols
+        //add entry to every column in data
+        //check that newColData has same length as numLines? -> or if not just fill in blank
+        //loop through lines, run
 
     }
 
     public function addRow(){
-
+        //increment numRows
+        //add array of data to data
     }
 
 
