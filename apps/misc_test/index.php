@@ -4,7 +4,7 @@ require '../.config.php'; // get the functions and classes library
 //login_manager.php includes login_form.php, which submits login info to login_check.php
 //login_check.php then redirects back to whatever page requested the login (variable stored in session
 // if the login info is correct
-$moduleName = 'db_test';
+$moduleName = 'misc_test';
 require '../.utils/login_manager.php';
 
 if (@$_SESSION['authorized'] == true){
@@ -34,10 +34,11 @@ if (@$_SESSION['authorized'] == true){
         <?php
         $db->setQuery('SHOW TABLES in '.DB_NAME);
         $tablesList = $db->getRecord();
+        //todo: fix bug where changing pages erases the selected table. store in session instead
         $selectedTable = @$_POST['data-table'];
         ?>
 
-        <form method="post" action="db_tests.php" style="max-width: 500px; margin: auto">
+        <form method="post" action="" style="max-width: 500px; margin: auto">
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                     <label class="input-group-text" for="data-table">Selected Table:</label>
@@ -68,7 +69,7 @@ if (@$_SESSION['authorized'] == true){
             //$table = $db->getRecords();
             //$col_titles = ['Book Title', 'Author'];
             $php_table = new Table($col_titles, $table, 'books-inventory');
-            $php_table->enablePagination(10, intval(getParam('p'))-1);
+            $php_table->enablePagination(5, intval(getParam('p'))-1);
             $php_table->draw();
 
             ?>
