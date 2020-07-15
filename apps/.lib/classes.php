@@ -36,7 +36,16 @@ class Database{
     }
 
     public function setQuery($query){
-        $this->statement = $this->dbHandler->prepare($query);
+        try{
+            $this->error = null;
+            $this->statement = $this->dbHandler->prepare($query);
+            return true;
+        }
+        catch (PDOException $e){
+            $this->error = $e;
+            return false;
+        }
+
     }
 
     // $param: the placeholder value that we will be using in our SQL statement example: name

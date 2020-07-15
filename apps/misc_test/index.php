@@ -14,12 +14,14 @@ if (@$_SESSION['authorized'] == true){
     $username = $_SESSION['username'];
     $db = new Database();
 
-    //todo: abstract this into dropdown menu class
+    //todo: abstract this into dropdown menu class, then add class to Table- has tools like dropdown and nav buttons
+    //if a table was set via post, then use that table
     if (isset($_POST['data-table'])){
         $selectedTable = $_POST['data-table'];
         $_SESSION['data-table'] = $selectedTable;
     }
     else{
+        //otherwise, check session for a table selected
         $selectedTable = @$_SESSION['data-table'];
     }
 
@@ -32,8 +34,13 @@ if (@$_SESSION['authorized'] == true){
     <!--todo: abstract this dropdown menu into a class so it's reusable-->
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <?php
-        $db->setQuery('SHOW TABLES in '.DB_NAME);
-        $tablesList = $db->getRecord();
+        if (!$db->getError()){ //check for db error before interacting
+            $db->setQuery('SHOW TABLES in '.DB_NAME);
+            $tablesList = $db->getRecord();
+        }
+        else{
+            echo "<p class='text-danger text-center'>Could not connect to database</p>";
+        }
         ?>
 
         <form method="post" action="" style="max-width: 500px; margin: auto">
@@ -60,12 +67,16 @@ if (@$_SESSION['authorized'] == true){
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <div class="table-responsive">
             <?php
-            $table = $db->selectAll($selectedTable);
-            $col_titles = $db->getColumnNames($selectedTable);
-            $php_table = new Table($col_titles, $table, 'books-inventory');
-            $php_table->enablePagination(5, intval(getParam('p'))-1);
-            $php_table->draw();
-
+            if (!$db->getError()){ //check for db error before interacting
+                $table = $db->selectAll($selectedTable);
+                $col_titles = $db->getColumnNames($selectedTable);
+                $php_table = new Table($col_titles, $table, 'books-inventory');
+                $php_table->enablePagination(5, intval(getParam('p'))-1);
+                $php_table->draw();
+            }
+            else{
+                echo "<p class='text-danger text-center'>Could not connect to database</p>";
+            }
             ?>
         </div>
     </div>
@@ -79,20 +90,20 @@ if (@$_SESSION['authorized'] == true){
 //            echo '<br>';
 //            var_dump(intval($x));
 
-        echo 'selected table empty: ';
-        var_dump(empty($selectedTable));
-
-        echo '<br>selected table contents: ';
-        var_dump($selectedTable);
-
-        echo '<br>Session data-table: ';
-        var_dump($_SESSION['data-table']);
-
-        echo '<br>datatable set on post: ';
-        var_dump(isset($_POST['data-table']));
-
-        echo '<br>Current table page: ';
-        var_dump($php_table->currPageNum);
+//        echo 'selected table empty: ';
+//        var_dump(empty($selectedTable));
+//
+//        echo '<br>selected table contents: ';
+//        var_dump($selectedTable);
+//
+//        echo '<br>Session data-table: ';
+//        var_dump($_SESSION['data-table']);
+//
+//        echo '<br>datatable set on post: ';
+//        var_dump(isset($_POST['data-table']));
+//
+//        echo '<br>Current table page: ';
+//        var_dump($php_table->currPageNum);
         ?>
     </div>
 
