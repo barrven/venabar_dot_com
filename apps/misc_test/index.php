@@ -12,7 +12,6 @@ if (@$_SESSION['authorized'] == true){
     //set persistent page variables here for all data sources
     $page_title = 'db_test';
     $username = $_SESSION['username'];
-    $db = new Database();
 
     //todo: abstract this into dropdown menu class, then add class to Table- has tools like dropdown and nav buttons
     //if a table was set via post, then use that table
@@ -31,72 +30,24 @@ if (@$_SESSION['authorized'] == true){
     include '../.phtml/welcomeBanner_logoutBtn.php'
     ?>
 
-    <!--todo: abstract this dropdown menu into a class so it's reusable-->
-    <div class="container bg-light border border-success rounded mt-2 p-3">
-        <?php
-        if (!$db->getError()){ //check for db error before interacting
-            $db->setQuery('SHOW TABLES in '.DB_NAME);
-            $tablesList = $db->getRecord();
-        }
-        else{
-            echo "<p class='text-danger text-center'>Could not connect to database</p>";
-        }
-
-        $s = (@$selectedTable)? $selectedTable : 'No table selected';
-        $dd = new DropDownForm($tablesList, $s);
-        ?>
-
-    </div>
-
-
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <div class="table-responsive">
             <?php
-            if (!$db->getError()){ //check for db error before interacting
-                $table = $db->selectAll($selectedTable);
-                $col_titles = $db->getColumnNames($selectedTable);
 
-                $php_table = new Table($col_titles, $table, 'books-inventory');
-                $php_table->enablePagination(5, intval(getParam('p'))-1);
-                $php_table->draw();
-            }
-            else{
-                echo "<p class='text-danger text-center'>Could not connect to database</p>";
-            }
+            $s = (@$selectedTable)? $selectedTable : 'No table selected';
+            $db = new Database();
+            $dropDown = new DropDownForm($s, 'Selected Table:');
+            $php_table = new Table();
+            $php_table->setDataSource($db);
+            $php_table->setControl($dropDown, 'SHOW TABLES in '.DB_NAME);
+            $php_table->populateData();
+            $php_table->enablePagination(5, (int)getParam('p')-1);
+            $php_table->drawControl();
+            $php_table->draw();
+
             ?>
         </div>
     </div>
-
-    <div class="container bg-light border border-success rounded mt-2 p-3">
-        <?php
-//        echo $php_table->numPages.'<br>';
-//        echo $php_table->currPageNum.'<br>';
-//        $x = getParam('p');
-//        var_dump($x);
-//        echo '<br>';
-//        var_dump(intval($x));
-
-//        echo 'selected table empty: ';
-//        var_dump(empty($selectedTable));
-//
-//        echo '<br>selected table contents: ';
-//        var_dump($selectedTable);
-//
-//        echo '<br>Session data-table: ';
-//        var_dump($_SESSION['data-table']);
-//
-//        echo '<br>datatable set on post: ';
-//        var_dump(isset($_POST['data-table']));
-//
-//        echo '<br>Current table page: ';
-//        var_dump($php_table->currPageNum);
-        ?>
-    </div>
-
-
-
-
-
 
 
 

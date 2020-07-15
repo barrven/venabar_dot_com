@@ -174,10 +174,10 @@ class Database{
 class Table{
     //basic properties
     protected $id;
-    protected $numRows;
-    protected $numCols;
+    public $numRows;
+    public $numCols;
     protected $colTitles;
-    protected $data;
+    public $data;
     //style properties
     public $tableClass;
     public $theadClass;
@@ -187,12 +187,18 @@ class Table{
     public  $numPages; //  roundUp(sizeOf($data) / $recordsPerPage)
     public $currPageNum; // zero indexed because it makes rowStart and rowEnd easier to calculate
     //todo: change table to include a database connection (data source)
+    //dataSource
+    public $dataSource;
+    //controls
+    protected $control;
 
     public function __construct($colTitles=[], $data=[[]], $id=''){
-        $this->numRows = sizeof($data);
-        $this->numCols = sizeof($colTitles);
-        $this->colTitles = $colTitles;
+    //public function __construct(Database $dataSource, $query='', $colTitles=[], $id=''){
         $this->data = $data;
+        $this->colTitles = $colTitles;
+        $this->numRows = sizeof($this->data);
+        if (isset($this->data[0]))
+            $this->numCols = sizeof($this->data[0]);
         $this->id = $id;
         //set styles default
         $this->tableClass = 'table table-striped';
@@ -200,7 +206,43 @@ class Table{
 
     }
 
-    //todo: complete pagination method
+    public function setDataSource(Database $dataSource){
+        //don't set as dataSource if not a valid object or source has an error
+        if (get_class($dataSource) != 'Database') return false;
+        if ($dataSource->getError()) return false; //if error is not null, return
+        $this->dataSource = $dataSource;
+    }
+
+    public function populateData($query=''){
+        if (!$this->dataSource) return;
+
+        if ($query){
+            $this->dataSource->setQuery($query);
+            $this->data = $this->dataSource->getRecords();
+        }
+        else{
+            $this->data = $this->dataSource->selectAll($this->control->selected);
+        }
+
+        $this->numRows = sizeof($this->data);
+        if (isset($this->data[0])){
+            $this->numCols = sizeof($this->data[0]);
+        }
+
+    }
+
+    //todo: decide what other kinds of controls would be useful, then make a generic control
+    // class with DropDownForm as a subclass
+    public function setControl(DropdownForm $dropDown, $query){
+        $dropDown->setDataSource($this->dataSource, $query);
+        $this->control = $dropDown;
+    }
+
+    public function drawControl(){
+        $this->control->draw();
+    }
+
+
     public function enablePagination($recPerPage=10, $currPage=0){
         $this->pagination = true;
         $this->recordsPerPage = $recPerPage;
@@ -234,9 +276,8 @@ class Table{
         echo "<thead class='$this->theadClass'>".PHP_EOL;
         echo "<tr>".PHP_EOL;
         //add the column titles
-        for ($i = 0; $i < $this->numCols; $i++){ // changed this from foreach so that addColumn will work
-            $temp = $this->colTitles[$i];
-            echo "<th scope='col'>$temp</th>".PHP_EOL;
+        foreach ($this->colTitles as $title){
+            echo "<th scope='col'>$title</th>".PHP_EOL;
         }
         echo "</tr>".PHP_EOL;
         echo "</thead>".PHP_EOL;
@@ -254,7 +295,6 @@ class Table{
         echo "</tbody>".PHP_EOL;
         echo "</table>".PHP_EOL;
 
-        //todo: add page navigation buttons here
         if ($this->pagination){
             $this->drawPageButtons();
         }
@@ -292,10 +332,7 @@ class Table{
 
     }
 
-    protected function drawControl(){
-
-    }
-
+    //todo: complete addColumn Table method
     public function addColumn($newColData =[]){
         //specify the column (default is far right)
         //increment numCols
@@ -305,6 +342,7 @@ class Table{
 
     }
 
+    //todo: complete Table addRow method
     public function addRow(){
         //increment numRows
         //add array of data to data
@@ -313,22 +351,37 @@ class Table{
 
 }
 
-class DropDownForm{
+class DropdownForm{
     protected $selectList;
-    protected $selected;
+    public $selected;
     protected $dataSource;
+    protected $title;
 
-    public function __construct($selectList=[], $selected=''){
+    public function __construct($selected='', $title='Select item:', $selectList=[]){
         $this->selectList = $selectList;
         $this->selected = $selected;
-        $this->draw();
+        $this->title = $title;
     }
 
-    public function draw(){
+    public function setDataSource(Database $dataSource, $query){
+        //don't set as dataSource if not a valid object or source has an error
+        if (get_class($dataSource) != 'Database') return false;
+        if ($dataSource->getError()) return false; //if error is not null, return
+        $this->dataSource = $dataSource;
+        $this->dataSource->setQuery($query);
+        $this->selectList = $this->dataSource->getRecord();
+    }
+
+    public function draw(){ //don't draw the dropdown if data source is not valid
+        if (!$this->dataSource){
+            echo "<p class='text-danger text-center'>Could not connect to database</p>";
+            return;
+        }
+
         echo '<form method="post" action="" style="max-width: 500px; margin: auto">'.PHP_EOL;
         echo '<div class="input-group mb-3">'.PHP_EOL;
         echo '<div class="input-group-prepend">'.PHP_EOL;
-        echo '<label class="input-group-text" for="data-table">Selected Table:</label>'.PHP_EOL;
+        echo "<label class='input-group-text' for='data-table'>$this->title</label>".PHP_EOL;
         echo '</div>'.PHP_EOL;
         echo '<select class="custom-select" id="data-table" name="data-table">'.PHP_EOL;
         echo "<option selected>$this->selected</option>".PHP_EOL;
