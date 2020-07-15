@@ -184,10 +184,9 @@ class Table{
     //pagination properties
     protected $pagination;
     protected $recordsPerPage;
-    //todo: change these back to protected after finished testing
     public  $numPages; //  roundUp(sizeOf($data) / $recordsPerPage)
     public $currPageNum; // zero indexed because it makes rowStart and rowEnd easier to calculate
-
+    //todo: change table to include a database connection (data source)
 
     public function __construct($colTitles=[], $data=[[]], $id=''){
         $this->numRows = sizeof($data);
@@ -232,7 +231,6 @@ class Table{
         }
 
         echo "<table class='$this->tableClass' id='$this->id'>".PHP_EOL;
-
         echo "<thead class='$this->theadClass'>".PHP_EOL;
         echo "<tr>".PHP_EOL;
         //add the column titles
@@ -242,22 +240,18 @@ class Table{
         }
         echo "</tr>".PHP_EOL;
         echo "</thead>".PHP_EOL;
-
         echo "<tbody class='bg-light'>".PHP_EOL;
         //populate the table
         //rowStart and rowEnd are set based on whether pagination is enabled
         for ($i = $rowStart; $i < $rowEnd; $i++){ // changed this from foreach so that addRow will work
             echo "<tr>".PHP_EOL;
-
             for ($j = 0; $j < $this->numCols; $j++){ // changed this from foreach so that addColumn will work
                 $temp = $this->data[$i][$j];
                 echo "<td>$temp</td>".PHP_EOL;
             }
-
             echo "</tr>".PHP_EOL;
         }
         echo "</tbody>".PHP_EOL;
-
         echo "</table>".PHP_EOL;
 
         //todo: add page navigation buttons here
@@ -298,6 +292,10 @@ class Table{
 
     }
 
+    protected function drawControl(){
+
+    }
+
     public function addColumn($newColData =[]){
         //specify the column (default is far right)
         //increment numCols
@@ -313,4 +311,35 @@ class Table{
     }
 
 
+}
+
+class DropDownForm{
+    protected $selectList;
+    protected $selected;
+    protected $dataSource;
+
+    public function __construct($selectList=[], $selected=''){
+        $this->selectList = $selectList;
+        $this->selected = $selected;
+        $this->draw();
+    }
+
+    public function draw(){
+        echo '<form method="post" action="" style="max-width: 500px; margin: auto">'.PHP_EOL;
+        echo '<div class="input-group mb-3">'.PHP_EOL;
+        echo '<div class="input-group-prepend">'.PHP_EOL;
+        echo '<label class="input-group-text" for="data-table">Selected Table:</label>'.PHP_EOL;
+        echo '</div>'.PHP_EOL;
+        echo '<select class="custom-select" id="data-table" name="data-table">'.PHP_EOL;
+        echo "<option selected>$this->selected</option>".PHP_EOL;
+        foreach ($this->selectList as $item){
+            echo "<option value='$item'>$item</option>".PHP_EOL;
+        }
+        echo '</select>'.PHP_EOL;
+        echo '<div class="input-group-append">'.PHP_EOL;
+        echo '<button class="btn btn-success" type="submit">Submit</button>'.PHP_EOL;
+        echo '</div>'.PHP_EOL;
+        echo '</div>'.PHP_EOL;
+        echo '</form>'.PHP_EOL;
+    }
 }

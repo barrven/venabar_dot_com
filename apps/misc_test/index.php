@@ -41,26 +41,11 @@ if (@$_SESSION['authorized'] == true){
         else{
             echo "<p class='text-danger text-center'>Could not connect to database</p>";
         }
+
+        $s = (@$selectedTable)? $selectedTable : 'No table selected';
+        $dd = new DropDownForm($tablesList, $s);
         ?>
 
-        <form method="post" action="" style="max-width: 500px; margin: auto">
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <label class="input-group-text" for="data-table">Selected Table:</label>
-                </div>
-                <select class="custom-select" id="data-table" name="data-table">
-                    <option selected><?php echo (@$selectedTable)? $selectedTable : 'No table selected' ?></option>
-                    <?php
-                    foreach ($tablesList as $item){
-                        echo "<option value='$item'>$item</option>".PHP_EOL;
-                    }
-                    ?>
-                </select>
-                <div class="input-group-append">
-                    <button class="btn btn-success" type="submit">Submit</button>
-                </div>
-            </div>
-        </form>
     </div>
 
 
@@ -70,6 +55,7 @@ if (@$_SESSION['authorized'] == true){
             if (!$db->getError()){ //check for db error before interacting
                 $table = $db->selectAll($selectedTable);
                 $col_titles = $db->getColumnNames($selectedTable);
+
                 $php_table = new Table($col_titles, $table, 'books-inventory');
                 $php_table->enablePagination(5, intval(getParam('p'))-1);
                 $php_table->draw();
@@ -83,12 +69,12 @@ if (@$_SESSION['authorized'] == true){
 
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <?php
-//            echo $php_table->numPages.'<br>';
-//            echo $php_table->currPageNum.'<br>';
-//            $x = getParam('p');
-//            var_dump($x);
-//            echo '<br>';
-//            var_dump(intval($x));
+//        echo $php_table->numPages.'<br>';
+//        echo $php_table->currPageNum.'<br>';
+//        $x = getParam('p');
+//        var_dump($x);
+//        echo '<br>';
+//        var_dump(intval($x));
 
 //        echo 'selected table empty: ';
 //        var_dump(empty($selectedTable));
