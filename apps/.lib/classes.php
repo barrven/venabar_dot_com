@@ -271,8 +271,16 @@ class Table{
         //links for each button ar numbered (not zero indexed)
         //must -1 before sending value to enablePagination
         for ($i = 1; $i <= $this->numPages; $i++){
-            echo '<li class="page-item">'.PHP_EOL;
-            echo "<a class='page-link' href='?p=$i'>$i</a>".PHP_EOL;
+            //mark the active page button
+            if ($i-1 == $this->currPageNum){
+                echo '<li class="page-item active">'.PHP_EOL;
+                echo "<a class='page-link' href='?p=$i'>$i<span class=\"sr-only\">(current)</span></a>".PHP_EOL;
+            }
+            else{
+                echo '<li class="page-item">'.PHP_EOL;
+                echo "<a class='page-link' href='?p=$i'>$i</a>".PHP_EOL;
+            }
+
             echo '</li>'.PHP_EOL;
         }
 

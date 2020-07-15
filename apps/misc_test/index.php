@@ -4,38 +4,36 @@ require '../.config.php'; // get the functions and classes library
 //login_manager.php includes login_form.php, which submits login info to login_check.php
 //login_check.php then redirects back to whatever page requested the login (variable stored in session
 // if the login info is correct
-$moduleName = 'misc_test';
+$moduleName = 'misc_test'; //needed for login manager to redirect back to correct folder
 require '../.utils/login_manager.php';
 
+//if login succeeded, load stuff below
 if (@$_SESSION['authorized'] == true){
-
+    //set persistent page variables here for all data sources
     $page_title = 'db_test';
-    $msg = 'The store is still under construction';
-    //html page content
-    include '../.phtml/header.php';
-    //include '../.utils/msg.phtml';
     $username = $_SESSION['username'];
     $db = new Database();
-    //if login succeeded, load stuff below
+
+    //todo: abstract this into dropdown menu class
+    if (isset($_POST['data-table'])){
+        $selectedTable = $_POST['data-table'];
+        $_SESSION['data-table'] = $selectedTable;
+    }
+    else{
+        $selectedTable = @$_SESSION['data-table'];
+    }
+
+
+    //html page content
+    include '../.phtml/header.php';
+    include '../.phtml/welcomeBanner_logoutBtn.php'
     ?>
 
-    <div class="text-center text-white bg-success border border-success rounded p-3">
-        <!-- logout button uses action param to tell this page to logout-->
-        <a class="btn btn-primary float-right" href="?action=logout">Logout</a>
-        <h1>
-            <span class="fas fa-robot"></span>
-            <?php echo 'Welcome, ' . @$username . '!'; ?>
-            <span class="fas fa-space-shuttle"></span>
-        </h1>
-
-    </div>
-
+    <!--todo: abstract this dropdown menu into a class so it's reusable-->
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <?php
         $db->setQuery('SHOW TABLES in '.DB_NAME);
         $tablesList = $db->getRecord();
-        //todo: fix bug where changing pages erases the selected table. store in session instead
-        $selectedTable = @$_POST['data-table'];
         ?>
 
         <form method="post" action="" style="max-width: 500px; margin: auto">
@@ -45,7 +43,6 @@ if (@$_SESSION['authorized'] == true){
                 </div>
                 <select class="custom-select" id="data-table" name="data-table">
                     <option selected><?php echo (@$selectedTable)? $selectedTable : 'No table selected' ?></option>
-<!--                    <option selected>No Table Selected</option>-->
                     <?php
                     foreach ($tablesList as $item){
                         echo "<option value='$item'>$item</option>".PHP_EOL;
@@ -65,9 +62,6 @@ if (@$_SESSION['authorized'] == true){
             <?php
             $table = $db->selectAll($selectedTable);
             $col_titles = $db->getColumnNames($selectedTable);
-            //$db->setQuery('select books_name, books_author from books');
-            //$table = $db->getRecords();
-            //$col_titles = ['Book Title', 'Author'];
             $php_table = new Table($col_titles, $table, 'books-inventory');
             $php_table->enablePagination(5, intval(getParam('p'))-1);
             $php_table->draw();
@@ -85,9 +79,20 @@ if (@$_SESSION['authorized'] == true){
 //            echo '<br>';
 //            var_dump(intval($x));
 
-        var_dump(!empty($selectedTable));
-        echo '<br>';
+        echo 'selected table empty: ';
+        var_dump(empty($selectedTable));
+
+        echo '<br>selected table contents: ';
         var_dump($selectedTable);
+
+        echo '<br>Session data-table: ';
+        var_dump($_SESSION['data-table']);
+
+        echo '<br>datatable set on post: ';
+        var_dump(isset($_POST['data-table']));
+
+        echo '<br>Current table page: ';
+        var_dump($php_table->currPageNum);
         ?>
     </div>
 
