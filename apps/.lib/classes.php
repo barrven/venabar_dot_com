@@ -89,19 +89,22 @@ class Database{
     //////////////////////////
     // higher level methods //
     //////////////////////////
-    // todo: all functions below should have some sort of error returning
     public function getRecords($fetchStyle=PDO::FETCH_NUM){
         $this->execute(); //execute handles possible exception and stores the error
         return $this->statement->fetchAll($fetchStyle);
     }
 
+    public function getRecord($fetchStyle=PDO::FETCH_NUM){
+        $this->execute();
+        return $this->statement->fetch($fetchStyle);
+    }
+
     //returns 1d array
-    public function getRecord(){
+    public function getColumn(){
         $this->execute();
         //return $this->statement->fetch($fetchStyle);
         $result = $this->statement->fetchAll(PDO::FETCH_NUM);
 
-        //todo: change this later to use array_implode() to reduce the second dimension to string
         $singleDArray = [];
         foreach ($result as $item) {
             array_push($singleDArray, $item[0]);
@@ -127,7 +130,7 @@ class Database{
         $this->bind(':clause', $clause);
 
         $this->setQuery("select $col from $table where $whereCol = '$clause'");
-        return $this->getRecord()[0];
+        return $this->getColumn()[0];
     }
 
     public function getColumnNames($table){
@@ -135,7 +138,7 @@ class Database{
                                 WHERE  table_name = :dbTable AND table_schema = :dbName");
         $this->bind(':dbTable', $table);
         $this->bind('dbName', $this->dbName);
-        return $this->getRecord();
+        return $this->getColumn();
     }
 
     public function insert($cols, $values, $table){
@@ -169,8 +172,8 @@ class Database{
 
 }
 
-//todo: finish table class draw function with pagination
 //todo: store bootstrap classes in table parameters
+//todo: review access levels
 class Table{
     //basic properties
     protected $id;
@@ -186,10 +189,8 @@ class Table{
     protected $recordsPerPage;
     public  $numPages; //  roundUp(sizeOf($data) / $recordsPerPage)
     public $currPageNum; // zero indexed because it makes rowStart and rowEnd easier to calculate
-    //todo: change table to include a database connection (data source)
-    //dataSource
+    //data sources and controls
     public $dataSource;
-    //controls
     protected $control;
 
     public function __construct($colTitles=[], $data=[[]], $id=''){
@@ -216,11 +217,14 @@ class Table{
     public function populateData($query=''){
         if (!$this->dataSource) return;
 
+        //todo: change this method so you can still use a query other than selectAll while
+        // including a control.
         if ($query){
             $this->dataSource->setQuery($query);
             $this->data = $this->dataSource->getRecords();
         }
         else{
+            //this assumes that the selected property of control is referring to the table name
             $this->data = $this->dataSource->selectAll($this->control->selected);
         }
 
@@ -232,7 +236,7 @@ class Table{
     }
 
     //todo: decide what other kinds of controls would be useful, then make a generic control
-    // class with DropDownForm as a subclass
+    // class with DropDownForm as a subclass. ideas: radio buttons, check boxes, text input, buttons
     public function setControl(DropdownForm $dropDown, $query){
         $dropDown->setDataSource($this->dataSource, $query);
         $this->control = $dropDown;
@@ -333,12 +337,27 @@ class Table{
     }
 
     //todo: complete addColumn Table method
-    public function addColumn($newColData =[]){
+    public function addColumn($newColData =[], $position=''){
         //specify the column (default is far right)
+        if ($position == ''){
+            $position = $this->numCols;
+        }
         //increment numCols
+        $this->numCols++;
         //add entry to every column in data
-        //check that newColData has same length as numLines? -> or if not just fill in blank
-        //loop through lines, run
+        $ncdPointer = 0;
+        //loop through lines
+        for ($i = 0; $i < $this->numRows; $i++){
+            //check that newColData[pointer] exists. if not, substitute empty string
+            if (isset($newColData[$ncdPointer]))
+                $temp = $newColData[$ncdPointer++];
+            else
+                $temp = '';
+
+            array_splice($this->data[$i], $position, 0, $temp);
+        }
+
+
 
     }
 
@@ -369,7 +388,7 @@ class DropdownForm{
         if ($dataSource->getError()) return false; //if error is not null, return
         $this->dataSource = $dataSource;
         $this->dataSource->setQuery($query);
-        $this->selectList = $this->dataSource->getRecord();
+        $this->selectList = $this->dataSource->getColumn();
     }
 
     public function draw(){ //don't draw the dropdown if data source is not valid
