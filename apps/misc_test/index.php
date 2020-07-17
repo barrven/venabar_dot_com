@@ -34,18 +34,6 @@ if (@$_SESSION['authorized'] == true){
     <div class="container bg-light border border-success rounded mt-2 p-3">
         <div class="table-responsive">
             <?php
-//            if (!$db->getError()){ //check for db error before interacting
-//                $table = $db->selectAll($selectedTable);
-//                $col_titles = $db->getColumnNames($selectedTable);
-//
-//                $php_table = new Table($col_titles, $table, 'books-inventory');
-//                $php_table->enablePagination(5, intval(getParam('p'))-1);
-//                $php_table->draw();
-//            }
-//            else{
-//                echo "<p class='text-danger text-center'>Could not connect to database</p>";
-//            }
-
 
             $s = (@$selectedTable)? $selectedTable : 'No table selected'; //get selected table
             $db = new Database();
@@ -54,13 +42,11 @@ if (@$_SESSION['authorized'] == true){
                 //$col_titles = ['ID', 'NAME', 'ADDRESS', 'CITY', 'STATE'];
 
                 $dropDown = new DropDownForm($s, 'Selected Table:');
-
+                $dropDown->setDataSource($db, 'SHOW TABLES in '.DB_NAME);
                 $php_table = new Table($col_titles);
-                $php_table->setDataSource($db);
-                $php_table->setControl($dropDown, 'SHOW TABLES in '.DB_NAME);
-                $php_table->populateData();
+                $php_table->setDataSource($db, 'select * from '.$dropDown->selected);
                 $php_table->enablePagination(5, (int)getParam('p')-1);
-                $php_table->drawControl();
+                $dropDown->draw();
                 $php_table->draw();
             }
             else{

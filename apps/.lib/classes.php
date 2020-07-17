@@ -191,7 +191,6 @@ class Table{
     public $currPageNum; // zero indexed because it makes rowStart and rowEnd easier to calculate
     //data sources and controls
     public $dataSource;
-    protected $control;
 
     public function __construct($colTitles=[], $data=[[]], $id=''){
     //public function __construct(Database $dataSource, $query='', $colTitles=[], $id=''){
@@ -207,26 +206,13 @@ class Table{
 
     }
 
-    public function setDataSource(Database $dataSource){
+    public function setDataSource(Database $dataSource, $query){
         //don't set as dataSource if not a valid object or source has an error
         if (get_class($dataSource) != 'Database') return false;
         if ($dataSource->getError()) return false; //if error is not null, return
         $this->dataSource = $dataSource;
-    }
-
-    public function populateData($query=''){
-        if (!$this->dataSource) return;
-
-        //todo: change this method so you can still use a query other than selectAll while
-        // including a control.
-        if ($query){
-            $this->dataSource->setQuery($query);
-            $this->data = $this->dataSource->getRecords();
-        }
-        else{
-            //this assumes that the selected property of control is referring to the table name
-            $this->data = $this->dataSource->selectAll($this->control->selected);
-        }
+        $this->dataSource->setQuery($query);
+        $this->data = $this->dataSource->getRecords();
 
         $this->numRows = sizeof($this->data);
         if (isset($this->data[0])){
@@ -234,18 +220,6 @@ class Table{
         }
 
     }
-
-    //todo: decide what other kinds of controls would be useful, then make a generic control
-    // class with DropDownForm as a subclass. ideas: radio buttons, check boxes, text input, buttons
-    public function setControl(DropdownForm $dropDown, $query){
-        $dropDown->setDataSource($this->dataSource, $query);
-        $this->control = $dropDown;
-    }
-
-    public function drawControl(){
-        $this->control->draw();
-    }
-
 
     public function enablePagination($recPerPage=10, $currPage=0){
         $this->pagination = true;
@@ -369,6 +343,9 @@ class Table{
 
 
 }
+
+//todo: decide what other kinds of controls would be useful, then make a generic control
+// class with DropDownForm as a subclass. ideas: radio buttons, check boxes, text input, buttons
 
 class DropdownForm{
     protected $selectList;

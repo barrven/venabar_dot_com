@@ -45,9 +45,11 @@ include '../.phtml/header.php';
 
 <div class="container bg-light border border-success rounded m-5 p-3">
     <?php
-    $db->setQuery('select * from publishers where publishers_state = \'NY\'');
-    $record = $db->getRecord();
-    $t2 = new Table(['ID', 'NAME', 'ADDRESS', 'CITY', 'STATE', 'COUNTRY'], [$record]);
+    //$db->setQuery('select * from publishers where publishers_state = \'NY\'');
+    //$record = $db->getRecord();
+    $t2 = new Table(['ID', 'NAME', 'ADDRESS', 'CITY', 'STATE', 'COUNTRY']);
+    $t2->setDataSource($db);
+    $t2->populateData('select * from publishers where publishers_country = \'USA\'');
     $t2->draw();
     ?>
 </div>
