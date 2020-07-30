@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click and Drag Div Tags</title>
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: rgb(84, 85, 83);
+        }
+        .block {
+            position: absolute;
+            background-color: blue;
+            cursor: move;
+            height: 100px;
+            width: 100px;
+            /* left: 335px;
+            top: 335px; */
+            color: white;
+            text-align: center;
+        }
+        .block:hover{
+            opacity: 0.75;
+        }
+        .container{
+            width: 500px;
+            height: 500px;
+            margin: auto;
+            margin-top: 10px;
+            background-color: white;
+            border: 2px solid black;
+        }
+        .control-panel{
+            max-width: 680px;
+            margin: auto;
+            margin-top: 20px;
+            text-align: center;
+            padding: 10px;
+            color: white;
+        }
+        .control-panel button{
+            padding: 10px;
+            width: 100px;
+            background-color: rgb(10, 177, 24);
+            color: white;
+            border: 1px solid black;
+            border-radius: 10px;
+        }
+        .control-panel button:hover{
+            border: 1px solid white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container" id="cont1"></div>
+
+    <div class="control-panel">
+        <label for="color-selector">Color</label>
+        <input type="color" name="block-color" id="color-selector">
+
+        <label for="height-selector">Height</label>
+        <input type="range" min="10" max="500" value="100" name="height" id="height-selector">
+
+        <label for="width-selector">Width</label>
+        <input type="range" min="10" max="500" value="100" name="width" id="width-selector">
+        <br>
+        <label for="show-coords">Show XY</label>
+        <input type="checkbox" id="show-coords" checked>
+
+        <button onclick="addBlock()">Add Block</button>
+    </div>
+
+    <div class="control-panel" id="info"></div>
+    
+
+    <script>
+        document.getElementById('cont1').addEventListener('click', function(){
+           if(currentBlock != null){
+                currentBlock.style.opacity = 100;
+                currentBlock = null;
+            }
+        }, true);
+        let currentBlock = null;
+        function addBlock(){
+            let node = document.createElement('div');
+            node.className = 'block';
+            node.addEventListener('mousedown', initClick);
+            node.addEventListener('click', setCurrentBlock);
+            node.style.background = document.getElementById('color-selector').value;
+            node.style.height = document.getElementById('height-selector').value + 'px';
+            node.style.width = document.getElementById('width-selector').value + 'px';
+            document.getElementById('cont1').appendChild(node);
+
+            if(document.getElementById('show-coords').checked){
+                let temp = document.getElementById('cont1').getElementsByClassName('block');
+                let b = temp[temp.length-1];
+                b.innerHTML = 'x' + b.offsetLeft +', y'+b.offsetTop;
+            }
+            
+        }
+
+        function setCurrentBlock(){
+            if(currentBlock != null){
+                currentBlock.style.opacity = 100;
+            }
+            currentBlock = this;
+            this.style.opacity = 0.75;
+            console.log(currentBlock);
+        }
+    </script>
+
+    <script>
+        let cont;
+        window.addEventListener('load', updateBoundingRect);
+        window.addEventListener('resize', updateBoundingRect);
+
+        function updateBoundingRect(){
+            cont = document.getElementById('cont1').getBoundingClientRect();
+            let s = ''
+            for(const propName in cont){
+                s += propName+ ': ' +cont[propName] + '<br>';
+            }
+            document.getElementById('info').innerHTML = s;
+
+            //check if there are any blocks out of bounds and move them
+
+        }
+
+        function initClick(e) {
+            let x = 0, y = 0, deltX = 0, deltY = 0, x2 = 0, y2 = 0;
+            let element = this;
+            //store the old event handlers (if there are any) in case you need to put them back later
+            let oldMouseupHandler = document.onmouseup;
+            let oldMouseMoveHandler = document.onmousemove;
+            trackClickDrag(e);
+    
+            function trackClickDrag(e) {
+                // get the mouse cursor position at startup (click):
+                x = e.clientX;
+                y = e.clientY;
+                pX = e.clientX;
+                pY = e.clientY;
+                
+                //tracking the movement of the mouse while dragging is done by an event listener belonging to the document
+                //do not use addEventLister() for this https://stackoverflow.com/questions/6348494/addeventlistener-vs-onclick
+                document.onmousemove = function(e){
+                    e.preventDefault()
+                    //get the change in cursor position
+                    deltX = e.clientX - x;
+                    deltY = e.clientY - y;
+                    //move the element by the same amount as the cursor
+                    x2 = element.offsetLeft + deltX;
+                    y2 = element.offsetTop + deltY;
+                    
+                    if (isInBounds(x2, y2)) {
+                        element.style.top = y2 + "px";
+                        element.style.left = x2 + "px";
+                        if(document.getElementById('show-coords').checked){
+                            element.innerHTML = `x${x2}, y${y2}`;
+                        }
+                        else{
+                            element.innerHTML = '';
+                        }
+                    }
+
+                    //get the next cursor position
+                    x = e.clientX;
+                    y = e.clientY;
+                };
+    
+                document.onmouseup = function(){
+                    //stop moving when mouse button is released and replace the old handlers
+                    document.onmouseup = oldMouseupHandler;
+                    document.onmousemove = oldMouseMoveHandler;
+                };
+            }
+
+            function isInBounds(x, y){
+                let h = element.clientHeight;
+                let w = element.clientWidth;
+                if(x + w > (cont.right) || y + h > (cont.bottom) || x < cont.x || y < cont.y){
+                    console.log('is out of bounds');
+                    return false;
+                }
+                return true;
+            }
+            
+        }
+    </script>
+</body>
+</html>

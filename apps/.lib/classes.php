@@ -6,15 +6,14 @@ class Database{
     private $user = DB_USER;
     private $pass = DB_PASS;
     private $dbName = DB_NAME;
+    private $port = PORT;
     private $dbHandler; // stores the PDO object if connection was successful
     private $error; //stores the PDOException object if there was an exception at some point
     private $statement; //stores a statement prepared by the query method
 
     public function __construct(){
-        $connString = 'mysql:host=' . $this->host . ';dbname=' . $this->dbName;
-        // Set options
+        $connString ="mysql:host=$this->host;dbname=$this->dbName;port=$this->port";
         $options = [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
-        // Create a new PDO instance
         try{
             $this->dbHandler = new PDO($connString, $this->user, $this->pass, $options);
             $this->statement = $this->dbHandler->prepare('');
@@ -89,6 +88,7 @@ class Database{
     //////////////////////////
     // higher level methods //
     //////////////////////////
+    // todo: add query to getRecord, getRecords, and getColumn
     public function getRecords($fetchStyle=PDO::FETCH_NUM){
         $this->execute(); //execute handles possible exception and stores the error
         return $this->statement->fetchAll($fetchStyle);
@@ -141,19 +141,25 @@ class Database{
         return $this->getColumn();
     }
 
-    public function insert($cols, $values, $table){
-        $colString = implode(',', $cols); //create string of column names
-
-        //steps to create string of variable names for use with the prepared statement
+    private function createValueVars($values){
         $valueVars = [];
         $len = sizeof($values);
         for($i = 0; $i < $len; $i++){
             $valueVars[$i] = ':' . $i;
         }
+        return $valueVars;
+    }
+
+    public function insert($cols, $values, $table){
+        $colString = implode(',', $cols); //create string of column names
+
+        //create string of variable names for use with the prepared statement
+        $valueVars = $this->createValueVars($values);
         $valueVarsString = implode(',', $valueVars);
         $q = "insert into $table ($colString) values($valueVarsString)";
         $this->setQuery($q);
         //loop and bind valueVars to values
+        $len = sizeof($values);
         for ($i = 0; $i < $len; $i++){
             $this->bind($valueVars[$i], $values[$i]);
         }
@@ -161,8 +167,26 @@ class Database{
         return $this->execute();
     }
 
-    public function update(){
-        //todo:implement db class update method
+    public function updateById($table, $id, $idColName, $cols, $values){
+        // ex: UPDATE books SET books_name='2010 Odyssey Two'  WHERE books_id = 110;
+        //cols must be an array of column names that match the db
+        //data must be a list of values equal in length to cols, and in the same order
+
+        $colValVars = $this->createValueVars($values);
+        $setString = '';
+        $len = sizeof($cols);
+        for ($i = 0; $i < $len; $i++){
+            $setString .= $cols[$i].'='.$colValVars[$i];
+            if ($i < $len-1){
+                $setString .= ', ';
+            }
+        }
+        $this->setQuery("UPDATE $table SET $setString WHERE $idColName = $id");
+        for ($i=0;$i<$len;$i++){
+            $this->bind($colValVars[$i], $values[$i]);
+        }
+
+        return $this->execute();
     }
 
     public function delete(){
@@ -172,8 +196,7 @@ class Database{
 
 }
 
-//todo: store bootstrap classes in table parameters
-//todo: review access levels
+
 class Table{
     //basic properties
     protected $id;
@@ -279,7 +302,6 @@ class Table{
     }
 
     protected function drawPageButtons(){
-        //todo: figure out how to differentiate multiple tables with different pages using table id
 
         echo '<nav aria-label="Table page navigation">'.PHP_EOL;
         echo '<ul class="pagination justify-content-center">'.PHP_EOL;
@@ -310,7 +332,7 @@ class Table{
 
     }
 
-    //todo: complete addColumn Table method
+    //todo: practice attaching ids to buttons (e.g. for update)
     public function addColumn($newColData =[], $position=''){
         //specify the column (default is far right)
         if ($position == ''){
@@ -331,8 +353,6 @@ class Table{
             array_splice($this->data[$i], $position, 0, $temp);
         }
 
-
-
     }
 
     //todo: complete Table addRow method
@@ -344,14 +364,37 @@ class Table{
 
 }
 
+//todo: implement form class to use as container for multiple controls
+
+class Form{
+    
+}
+
 //todo: decide what other kinds of controls would be useful, then make a generic control
 // class with DropDownForm as a subclass. ideas: radio buttons, check boxes, text input, buttons
+abstract class Control{
+    public $value, $valueList, $dataSource;
+
+    public function __construct(){
+
+    }
+    public function setDataSource(Database $db, $query){
+
+    }
+
+    public function draw(){
+
+    }
+
+}
+
+
 
 class DropdownForm{
-    protected $selectList;
-    public $selected;
-    protected $dataSource;
-    protected $title;
+    protected $selectList; // list of values the user can choose from
+    public $selected; //value chosen by user
+    protected $dataSource; // supplies list of values
+    protected $title; //name of control
 
     public function __construct($selected='', $title='Select item:', $selectList=[]){
         $this->selectList = $selectList;
@@ -379,7 +422,7 @@ class DropdownForm{
         echo '<div class="input-group-prepend">'.PHP_EOL;
         echo "<label class='input-group-text' for='data-table'>$this->title</label>".PHP_EOL;
         echo '</div>'.PHP_EOL;
-        echo '<select class="custom-select" id="data-table" name="data-table">'.PHP_EOL;
+        echo '<select class="custom-select" id="" name="data-table">'.PHP_EOL;
         echo "<option selected>$this->selected</option>".PHP_EOL;
         foreach ($this->selectList as $item){
             echo "<option value='$item'>$item</option>".PHP_EOL;

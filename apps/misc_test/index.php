@@ -35,17 +35,17 @@ if (@$_SESSION['authorized'] == true){
         <div class="table-responsive">
             <?php
 
-            $s = (@$selectedTable)? $selectedTable : 'No table selected'; //get selected table
+            $selected = (@$selectedTable)? $selectedTable : 'No table selected'; //get selected control value
             $db = new Database();
             if (!$db->getError()){
-                $col_titles = $db->getColumnNames($selectedTable);
-                //$col_titles = ['ID', 'NAME', 'ADDRESS', 'CITY', 'STATE'];
 
-                $dropDown = new DropDownForm($s, 'Selected Table:');
+                $dropDown = new DropDownForm($selected, 'Selected Table:');
                 $dropDown->setDataSource($db, 'SHOW TABLES in '.DB_NAME);
-                $php_table = new Table($col_titles);
+
+                $php_table = new Table($db->getColumnNames($selectedTable));
                 $php_table->setDataSource($db, 'select * from '.$dropDown->selected);
                 $php_table->enablePagination(5, (int)getParam('p')-1);
+
                 $dropDown->draw();
                 $php_table->draw();
             }
